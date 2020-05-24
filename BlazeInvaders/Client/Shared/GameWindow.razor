@@ -1,0 +1,17 @@
+﻿@page "/gamewindow"
+<svg style="background-color:black; width:400px; height:400px;">
+    @foreach(var enemyModel in EnemyModels)
+    {
+        <EnemyComponent Model="enemyModel"></EnemyComponent>
+    }
+  
+</svg>
+
+@code {
+    List<EnemyComponentModel> EnemyModels { get; set; } = new List<EnemyComponentModel>
+    {
+        new EnemyComponentModel {enemyType="javascript",X=100,Y=100 },
+        new EnemyComponentModel {enemyType="angular",X=200,Y=200 },
+        new EnemyComponentModel {enemyType="react",X=300,Y=300 }
+    };
+}

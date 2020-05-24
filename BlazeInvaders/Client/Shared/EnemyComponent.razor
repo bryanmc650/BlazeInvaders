@@ -1,0 +1,21 @@
+﻿<svg>
+    @if (Model.enemyType == "javascript")
+    {
+        <image x="@Model.X" y="@Model.Y" width="25px" height="25px" href="GameAssets/Images/Enemies/JavascriptOpen.svg"></image>
+    }
+    else if (Model.enemyType == "angular")
+    {
+         <image x="@Model.X" y="@Model.Y" width="25px" height="25px" href="GameAssets/Images/Enemies/AngularOpen.svg" />
+    }
+    else
+    {
+         <image x="@Model.X" y="@Model.Y" width="25px" height="25px" href="GameAssets/Images/Enemies/ReactOpen.svg" />
+    }
+</svg>
+
+
+@code {
+    [Parameter]
+    public BlazeInvaders.Shared.EnemyComponentModel Model { get; set; }
+    
+}

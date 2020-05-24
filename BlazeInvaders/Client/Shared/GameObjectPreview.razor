@@ -1,5 +1,9 @@
 ﻿<h3>GameObjectPreview</h3>
-<img src="GameAssets/Images/Enemies/JavascriptOpen.svg" />
-@code {
 
+@ChildContent
+<img src="GameAssets/Images/Enemies/JavascriptOpen.svg" />
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
 }

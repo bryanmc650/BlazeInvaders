@@ -1,0 +1,17 @@
+﻿@page "/gameobjectpreview"
+@page "/gameobjectpreview/{Character}"
+
+@if (Character == "javascript")
+{
+    <GameObjectPreview></GameObjectPreview>
+}
+else
+{ 
+<p>Not Found</p>
+}
+
+
+@code {
+    [Parameter]
+    public string Character { get; set; }
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100px" height="125px" viewBox="0 0 100 125">
+  <!-- cap -->
+  <polygon
+    points="15,5 20,10 10,10 "
+    style="stroke: black; stroke-width:1; fill: red" />
+
+  <!-- body -->
+  <polygon
+    points="12,10 18,10 18,58 12,58"
+    style="stroke: black; stroke-width: 1; fill: white" />
+
+  <!-- tail -->
+  <polygon
+    points="9,58 21,58 21,50 18,45 12,45 9,50"
+    style="stroke: black; stroke-width:1; fill: rgb(151, 23, 72)" />
+
+  <!-- left fin-->
+  <polygon
+    points="12,20 9,24 9,32 12,28"
+    style="stroke: black; stroke-width:1; fill: rgb(151, 23, 72)" />
+
+  <!-- right fin-->
+  <polygon
+    points="18,20 21,24 21,32 18,28"
+    style="stroke: black; stroke-width:1; fill: rgb(151, 23, 72)" />
+</svg>

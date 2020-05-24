@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100mm" height="125mm" viewBox="0 0 100 125">
+        <circle cx="50" cy="62.5" r="5" style="stroke: rgb(103, 175, 243); stroke-width:6; fill:rgb(103, 175, 243)" />
+        <ellipse cx="50" cy="62.5" rx="45" ry="15" style="stroke: rgb(103, 175, 243); stroke-width:3; fill:none" />
+        <ellipse cx="50" cy="62.5" rx="45" ry="15" style="stroke: rgb(103, 175, 243); stroke-width:3; fill:none" transform="rotate(77,50,62.5)" />
+        <ellipse cx="50" cy="62.5" rx="45" ry="15" style="stroke: rgb(103, 175, 243); stroke-width:3; fill:none" transform="rotate(-77,50,62.5)" />
+</svg>

@@ -1,10 +1,18 @@
 ﻿@page "/gameobjectpreview"
-@page "/gameobjectpreview/{Character}"
 
- <GameObjectPreview>Test String</GameObjectPreview>
 
+ <GameObjectPreview Size="size" @bind-EnemyType="enemyType"></GameObjectPreview>
+
+<input type="range" min="0" max="100" @bind="size" @bind:event="oninput"/>
+
+<p>Size: @size</p>
+<p>Enemy Type: @enemyType</p>
+
+<p>
+    <input type="text" @bind-value="size"/>
+</p>
 
 @code {
-    [Parameter]
-    public string Character { get; set; }
+    int size { get; set; } = 50;
+    string enemyType = "javascript";
 }

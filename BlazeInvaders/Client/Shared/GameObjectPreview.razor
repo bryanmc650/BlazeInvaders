@@ -1,9 +1,53 @@
-﻿<h3>GameObjectPreview</h3>
+﻿
+<h3>GameObjectPreview</h3>
+<div>
+    <svg>
+        @if (EnemyType == "javascript")
+        {
+            <image href="GameAssets/Images/Enemies/JavascriptOpen.svg" height="@Size" width="@Size" />
+        }
+        else if (EnemyType == "angular")
+        {
+            <image href="GameAssets/Images/Enemies/AngularOpen.svg" height="@Size" width="@Size" />
+        }
+        else
+        {
+            <image href="GameAssets/Images/Enemies/ReactOpen.svg" height="@Size" width="@Size" />
+        }
 
-@ChildContent
-<img src="GameAssets/Images/Enemies/JavascriptOpen.svg" />
+    </svg>
+    <select @bind="EnemyType">
+        <option value="javascript">Javascript</option>
+        <option value="angular">Angular</option>
+        <option value="react">React</option>
+    </select>
+</div>
 
 @code {
     [Parameter]
     public RenderFragment ChildContent { get; set; }
+    
+    [Parameter]
+    public int Size { get; set; }
+
+    private string enemyType;
+    [Parameter]
+    public string EnemyType
+    {
+        get
+        {
+            return enemyType;
+        }
+        set
+        {
+            if (value != enemyType)
+            {
+                enemyType = value;
+                EnemyTypeChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<string> EnemyTypeChanged { get; set; }
 }

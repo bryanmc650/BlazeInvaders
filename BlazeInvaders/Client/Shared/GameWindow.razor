@@ -1,51 +1,9 @@
 ﻿@page "/gamewindow"
-<svg style="background-color:black; width:400px; height:400px;">
-    @foreach(var enemyModel in EnemyModels)
-    {
-        <EnemyComponent Model="enemyModel"></EnemyComponent>
-    }
-  
-</svg>
+    <svg style="background-color:black; width:@($"{gameManager.WindowWidth}px"); height:@($"{gameManager.WindowHeight}px");">
+
+
+    </svg>
 
 @code {
-
-    List<EnemyComponentModel> EnemyModels { get; set; } = new List<EnemyComponentModel>
-    {
-        new EnemyComponentModel {enemyType="javascript",X=100,Y=100 },
-        new EnemyComponentModel {enemyType="angular",X=200,Y=200 },
-        new EnemyComponentModel {enemyType="react",X=300,Y=300 }
-    };
-
-    private bool moveRight = true;
-    System.Timers.Timer timer;
-
-    protected override void OnInitialized()
-    {
-        timer = new System.Timers.Timer();
-        timer.Interval = 100;
-        timer.Elapsed += timerElapsedHandler;
-        timer.Start();
-        base.OnInitialized();
-    }
-
-    private void timerElapsedHandler(object sender, System.Timers.ElapsedEventArgs args)
-    {
-        timer.Stop();
-        var maxXPosition = EnemyModels.Max(x => x.X);
-        var minXPosition = EnemyModels.Min(x => x.X);
-        if (maxXPosition + 5 > 400)
-            moveRight = false;
-        else if (minXPosition - 5 < 0)
-            moveRight = true;
-
-        foreach (var enemyModel in EnemyModels)
-        {
-            if (moveRight)
-                enemyModel.X += 5;
-            else
-                enemyModel.X -= 5;
-        }
-        StateHasChanged();
-        timer.Start();
-    }
+    ClientSideGameManager gameManager = new ClientSideGameManager();
 }

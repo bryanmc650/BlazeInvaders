@@ -43,6 +43,64 @@ namespace BlazeInvaders.Client.Shared
             return random.Next(outOf) == 0;
         }
 
+        //Create Player Model.
+        PlayerModel player;
+
+        void CreatePlayer()
+        {
+            player = new PlayerModel();
+            player.Height = 55;
+            player.Width = 35;
+            player.X = WindowHeight / 2 - player.Width / 2;
+            player.Y = WindowHeight - player.Height - 2; //Y pos is 2 px from the bottom of the screen.
+            GameModels.Add(player);
+        }
+
+        public void PlayerLeft()
+        {
+            player.Velocity = -9;
+            player.KeyPressHistory.Add(ConsoleKey.LeftArrow); //Hash set to track the direction we want to go.
+        }
+
+        public void CancelPlayerLeft()
+        {
+            player.KeyPressHistory.RemoveWhere(x => x == ConsoleKey.LeftArrow);
+            if (player.KeyPressHistory.Any()) //if there is a history entry we move to the right (opposite direction).
+                player.Velocity = 9;
+            else
+                player.Velocity = 0;
+        }
+
+        public void PlayerRight()
+        {
+            player.Velocity = 9;
+            player.KeyPressHistory.Add(ConsoleKey.RightArrow);
+        }
+
+        public void CancelPlayerRight()
+        {
+            player.KeyPressHistory.RemoveWhere(x => x == ConsoleKey.RightArrow);
+            if (player.KeyPressHistory.Any()) //if there is a history entry we move to the left (opposite direction).
+                player.Velocity = -9;
+            else
+                player.Velocity = 0;
+        }
+
+        public void PlayerFire()
+        {
+            if (GetPlayerMissileModels().Count > 0) //1 missile at a time.
+                return;
+
+            PlayerMissileModel playerMissileModel = new PlayerMissileModel();
+            playerMissileModel.X = player.X + player.Width / 2;
+            playerMissileModel.Y = WindowHeight - player.Height;
+            playerMissileModel.Height = 35;
+            playerMissileModel.Width = 25;
+            GameModels.Add(playerMissileModel);
+        
+        }
+
+        //Set up a new game.
         public void StartNewGame()
         {
             EngineTimer.Stop();
@@ -54,9 +112,11 @@ namespace BlazeInvaders.Client.Shared
             GameInfo.Round = 1;
 
             CreateEnemies();
+            CreatePlayer();
             EngineTimer.Start();
         }
 
+        //Create the list of enemy models and initial positions.
         void CreateEnemies()
         {
             int enemiesPerRow = 11;
@@ -156,8 +216,8 @@ namespace BlazeInvaders.Client.Shared
             {
                 //Do Something
                 UpdateEnemies();
-                //UpdatePlayers();
-                //UpdateMissilies();
+                UpdatePlayers();
+                UpdateMissiles();
                 CreateRandomBombs();
                 CreateRandomSaucers();
                 UpdateEnemyBombs();
@@ -195,6 +255,33 @@ namespace BlazeInvaders.Client.Shared
             saucer.Width = 45;
             saucer.PointValue = random.Next(20, 100);
             GameModels.Add(saucer);
+        }
+
+        void UpdatePlayers()
+        {
+            var newXPosition = player.X + player.Velocity;
+            var rightEdge = WindowWidth - player.Width;
+            if (newXPosition > rightEdge)
+                newXPosition = rightEdge;
+            if (newXPosition < 0)
+                newXPosition = 0;
+            player.X = newXPosition;
+        }
+
+        void UpdateMissiles()
+        {
+            int stepSize = 6;
+            var missileModels = GetPlayerMissileModels();
+
+            foreach (var model in missileModels.ToList())
+            {
+                model.Y -= stepSize;
+                if (model.Y < -model.Height)
+                {
+                    GameModels.Remove(model);
+                }
+            }
+        
         }
 
         void UpdateEnemyBombs()

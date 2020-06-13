@@ -6,12 +6,21 @@
         }
 
     </svg>
-<div>
-    <button class="btn btn-primary" @onclick="StartGame">Start Game</button>
-</div>
+    <div>
+        <button class="btn btn-primary" @onclick="StartGame">Start Game</button>
+        <button class="btn btn-primary" @onmousedown="PlayerLeft" @onmouseup="CancelPlayerLeft" @onmouseout="CancelPlayerLeft" >Left</button>
+        <button class="btn btn-danger" @onclick="PlayerFire">Fire Missile</button>
+        <button class="btn btn-primary" @onmousedown="PlayerRight" @onmouseup="CancelPlayerRight" @onmouseout="CancelPlayerRight">Right</button>
+    </div>
 
 @code {
     ClientSideGameManager gameManager = new ClientSideGameManager();
+
+    void PlayerLeft() => gameManager.PlayerLeft();
+    void CancelPlayerLeft() => gameManager.CancelPlayerLeft();
+    void PlayerRight() => gameManager.PlayerRight();
+    void CancelPlayerRight() => gameManager.CancelPlayerRight();
+    void PlayerFire() => gameManager.PlayerFire();
 
     void StartGame()
     {

@@ -1,9 +1,21 @@
 ﻿@page "/gamewindow"
     <svg style="background-color:black; width:@($"{gameManager.WindowWidth}px"); height:@($"{gameManager.WindowHeight}px");">
-
+        @foreach (var gameModel in gameManager.GameModels)
+        { 
+            <GameComponent Model="gameModel"></GameComponent>
+        }
 
     </svg>
+<div>
+    <button class="btn btn-primary" @onclick="StartGame">Start Game</button>
+</div>
 
 @code {
     ClientSideGameManager gameManager = new ClientSideGameManager();
+
+    void StartGame()
+    {
+        gameManager.StartNewGame();
+        gameManager.AfterGameUpdated = () => { StateHasChanged(); };
+    }
 }

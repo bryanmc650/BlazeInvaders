@@ -1,0 +1,9 @@
+﻿<svg>
+    <image x="@Model.X" y="@Model.Y" height="@(Model.Height)px" width="@(Model.Width)px" href="GameAssets/Images/@(Model.SpriteName).svg"></image>
+</svg>
+
+@code {
+    [Parameter]
+    public GameModelBase Model { get; set; }
+
+}

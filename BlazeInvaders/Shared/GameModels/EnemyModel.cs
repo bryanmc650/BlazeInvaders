@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace BlazeInvaders.Shared.GameModels
@@ -25,6 +26,24 @@ namespace BlazeInvaders.Shared.GameModels
                     return 20;
                 else 
                     return 10;
+            }
+        }
+
+        public override Rectangle CollisionRectangle
+        {
+            get
+            {
+                Rectangle r;
+
+                if (EnemyType == EnemyType.React)
+                {
+                    int adjustmentX = (int)(Width * 0.2);
+                    int adjustmentY = (int)(Height * 0.2);
+                    r = new Rectangle(X + adjustmentX / 2, Y + adjustmentY / 2, Width - adjustmentX, Height - adjustmentY);
+                }
+                else r = new Rectangle(X,Y,(int)(Width * 0.9),(int)(Height * 0.9));
+
+                return r;
             }
         }
     }

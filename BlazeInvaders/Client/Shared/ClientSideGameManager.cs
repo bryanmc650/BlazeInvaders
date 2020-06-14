@@ -1,6 +1,7 @@
 ﻿using BlazeInvaders.Shared.GameModels;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -45,6 +46,7 @@ namespace BlazeInvaders.Client.Shared
 
         //Create Player Model.
         PlayerModel player;
+        private DateTime lastExplosionUpdateTime;
 
         void CreatePlayer()
         {
@@ -221,9 +223,9 @@ namespace BlazeInvaders.Client.Shared
                 CreateRandomBombs();
                 CreateRandomSaucers();
                 UpdateEnemyBombs();
-                //CheckForPlayerMissileHits();
-                //CheckForEnemyHits();
-                //UpdateExplosions();
+                CheckForPlayerMissileHits();
+                CheckForEnemyHits();
+                UpdateExplosions();
                 //UpdateGameStatus();
                 UpdateSaucers();
 
@@ -238,6 +240,113 @@ namespace BlazeInvaders.Client.Shared
             }
             EngineTimer.Start();
             
+        }
+
+        void CreateExplosion(GameModelBase gameModelHit) //The game piece that has been hit is passed in.
+        {
+            ExplosionModel explosionModel = new ExplosionModel();
+            explosionModel.X = gameModelHit.X;
+            explosionModel.Y = gameModelHit.Y;
+            explosionModel.Height = 30;
+            explosionModel.Width = 30;
+            explosionModel.ExplosionState = 0;
+            GameModels.Add(explosionModel);
+
+            if (gameModelHit.ModelType == GameModelType.Saucer)
+                explosionModel.PointValue = ((SaucerModel)gameModelHit).PointValue;
+            if (gameModelHit.ModelType == GameModelType.Enemy)
+                explosionModel.PointValue = ((EnemyModel)gameModelHit).PointValue;
+        }
+
+        private void UpdateExplosions()
+        {
+            double ellapsed = (DateTime.Now - lastExplosionUpdateTime).TotalMilliseconds; //only update every 100 milliseconds. 
+            if (ellapsed < 100)
+                return;
+
+            lastExplosionUpdateTime = DateTime.Now;
+            var explosions = GetExplosionsModels();
+            foreach (var explosion in explosions)
+            {
+                if (explosion.ExplosionState == 4)
+                    GameModels.Remove(explosion);
+                else
+                    explosion.ExplosionState++;
+            }
+        
+        }
+
+        void CheckForPlayerMissileHits()
+        {
+            var missileModels = GetPlayerMissileModels(); //Get list of player missiles in flight. 
+            var enemyModels = GetEnemyModels(); //get lists of any potential targets. 
+            var bombModels = GetEnemyBombModels();
+            var saucerModels = GetSaucerModels();
+
+            foreach (var playerMissile in missileModels.ToList()) //Loop over player missile models (default is 1)
+            {
+                Rectangle playerMissileRect = playerMissile.CollisionRectangle; //Get the missile rectangle. 
+                var enemyHit = enemyModels.FirstOrDefault(x => playerMissileRect.IntersectsWith(x.CollisionRectangle)); //Check if the missile collides with any enemies or bombs. 
+                var enemyBombHit = bombModels.FirstOrDefault(x => playerMissileRect.IntersectsWith(x.CollisionRectangle));
+                GameModelBase gameModelHit = null; //Used to track the hit piece to create an explosion on that piece.
+
+                if (enemyHit != null && enemyBombHit != null) //only 1 of either an enemy or bomb can be hit at once. Preference on Y position. 
+                {
+                    if (enemyHit.Y > enemyBombHit.Y)
+                        enemyBombHit = null;
+                    else
+                        enemyHit = null;
+                }
+
+                if (enemyHit != null) //If an enemy was hit update the current score. 
+                {
+                    GameInfo.Score += enemyHit.PointValue;
+                    gameModelHit = enemyHit; //passed to create explosion.
+                }
+
+                if (enemyBombHit != null) //No points for hitting bombs. 
+                    gameModelHit = enemyBombHit;
+
+                if (gameModelHit == null)
+                {
+                    //Check for saucer hit. 
+                    var saucerHit = saucerModels.FirstOrDefault(x => playerMissileRect.IntersectsWith(x.CollisionRectangle));
+                    if (saucerHit != null)
+                    {
+                        GameInfo.Score += saucerHit.PointValue; //Add point value of saucer to score. 
+                        GameInfo.SaucersSinceLastDanosSnap++;
+                        if (GameInfo.SaucersSinceLastDanosSnap == 8) //After 8 saucers the player gets a new Danos Snap. 
+                        {
+                            GameInfo.DanosSnaps++;
+                            GameInfo.SaucersSinceLastDanosSnap = 0; //Count is reset. 
+                        }
+                        gameModelHit = saucerHit;
+                    }
+                }
+
+                if (gameModelHit != null) //Check if any hits occured.
+                {
+                    GameModels.Remove(gameModelHit); //Remove pieces that were hit from the board.
+                    GameModels.Remove(playerMissile);
+                    CreateExplosion(gameModelHit); //Create the explosion for the piece that was hit.
+                }
+            }
+        }
+
+        void CheckForEnemyHits()
+        {
+            List<GameModelBase> enemyItems = GameModels.Where(x => x.ModelType == GameModelType.Enemy || x.ModelType == GameModelType.EnemyBomb).ToList(); //List all current enemy items. 
+            Rectangle playerRect = player.CollisionRectangle; //Copy the player rectangle.
+            var killer = enemyItems.FirstOrDefault(x => playerRect.IntersectsWith(x.CollisionRectangle)); //check if any enemy item rectanles intersects with player rectangle. 
+            if (killer != null)
+            {
+                CreateExplosion(player);
+
+                GameModels.Remove(killer);
+                //GameModels.Remove(player);
+
+                GameInfo.Lives--;
+            }
         }
 
         private void CreateRandomSaucers()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace BlazeInvaders.Shared.GameModels
@@ -11,5 +12,15 @@ namespace BlazeInvaders.Shared.GameModels
         public override GameModelType ModelType => GameModelType.Player;
 
         public HashSet<ConsoleKey> KeyPressHistory { get; set; } = new HashSet<ConsoleKey>();
+
+        public override Rectangle CollisionRectangle
+        {
+            get 
+            {
+                int heightAdjustment = (int)(Height * .4);
+                var r = new Rectangle(X, Y + heightAdjustment / 2, Width, Height - heightAdjustment);
+                return r;
+            }
+        }
     }
 }

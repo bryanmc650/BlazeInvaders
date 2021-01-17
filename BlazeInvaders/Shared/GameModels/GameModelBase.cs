@@ -5,7 +5,7 @@ using System.Text;
 
 namespace BlazeInvaders.Shared.GameModels
 {
-    public enum GameModelType {None, Enemy, Player, PlayerMissile,EnemyBomb, Saucer, Explosion, DanosSnap, LifeLost, RoundCompleted, GameOver}
+    public enum GameModelType {None, Enemy, Player, PlayerMissile,EnemyBomb, Saucer, Explosion, ThanosSnap, LifeLost, RoundCompleted, GameOver}
     public class GameModelBase
     {
         public virtual GameModelType ModelType => GameModelType.None;

@@ -11,6 +11,7 @@
         <button class="btn btn-primary" @onmousedown="PlayerLeft" @onmouseup="CancelPlayerLeft" @onmouseout="CancelPlayerLeft" >Left</button>
         <button class="btn btn-danger" @onclick="PlayerFire">Fire Missile</button>
         <button class="btn btn-primary" @onmousedown="PlayerRight" @onmouseup="CancelPlayerRight" @onmouseout="CancelPlayerRight">Right</button>
+        <button class="btn btn-primary" @onclick="ThanosSnap">THANOS SNAP!</button>
     </div>
 
 @code {
@@ -21,6 +22,7 @@
     void PlayerRight() => gameManager.PlayerRight();
     void CancelPlayerRight() => gameManager.CancelPlayerRight();
     void PlayerFire() => gameManager.PlayerFire();
+    void ThanosSnap() => gameManager.ThanosSnap();
 
     void StartGame()
     {

@@ -12,7 +12,7 @@ namespace BlazeInvaders.Client.Shared
         public int Score { get; set; }
         public int Lives { get; set; }
         public int SaucersSinceLastDanosSnap { get; set; } = 0;
-        public int DanosSnaps { get; set; } = 0;
+        public int ThanosSnaps { get; set; } = 0;
         public int Round { get; set; }
     }
 }

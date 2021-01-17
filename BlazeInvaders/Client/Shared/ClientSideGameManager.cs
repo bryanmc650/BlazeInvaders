@@ -10,8 +10,10 @@ using System.Threading.Tasks;
 namespace BlazeInvaders.Client.Shared
 {
     enum EnemyDirection { Right, Left }
+    enum GameState {NotStarted, InProgress, Paused, LifeLost, GameOverInProgress, GameOver, RoundCompleted, ThanosSnapping } 
     public class ClientSideGameManager
     {
+        GameState GameState { get; set; }
         public GameInfo GameInfo { get; set; } = new GameInfo(); 
         Random random = new Random();
         EnemyDirection enemyDirection;
@@ -36,7 +38,7 @@ namespace BlazeInvaders.Client.Shared
         List<PlayerMissileModel> GetPlayerMissileModels() => GameModels.Where(x => x.ModelType == GameModelType.PlayerMissile).Select(x => (PlayerMissileModel)x).ToList();
         List<EnemyBombModel> GetEnemyBombModels() => GameModels.Where(x => x.ModelType == GameModelType.EnemyBomb).Select(x => (EnemyBombModel)x).ToList();
         List<ExplosionModel> GetExplosionsModels() => GameModels.Where(x => x.ModelType == GameModelType.Explosion).Select(x => (ExplosionModel)x).ToList();
-        List<DanosSnapModel> GetDanosSnapModels() => GameModels.Where(x => x.ModelType == GameModelType.DanosSnap).Select(x => (DanosSnapModel)x).ToList();
+        List<ThanosSnapModel> GetThanosSnapModels() => GameModels.Where(x => x.ModelType == GameModelType.ThanosSnap).Select(x => (ThanosSnapModel)x).ToList();
 
         //Helper method for random chance.
         bool GetRandomChance(int outOf)
@@ -115,6 +117,7 @@ namespace BlazeInvaders.Client.Shared
 
             CreateEnemies();
             CreatePlayer();
+            GameState = GameState.InProgress;
             EngineTimer.Start();
         }
 
@@ -217,18 +220,25 @@ namespace BlazeInvaders.Client.Shared
             try
             {
                 //Do Something
-                UpdateEnemies();
-                UpdatePlayers();
-                UpdateMissiles();
-                CreateRandomBombs();
-                CreateRandomSaucers();
-                UpdateEnemyBombs();
-                CheckForPlayerMissileHits();
-                CheckForEnemyHits();
-                UpdateExplosions();
-                //UpdateGameStatus();
-                UpdateSaucers();
+                if (GameState == GameState.InProgress)
+                {
+                    UpdateEnemies();
+                    UpdatePlayers();
+                    UpdateMissiles();
+                    CreateRandomBombs();
+                    CreateRandomSaucers();
+                    UpdateEnemyBombs();
+                    CheckForPlayerMissileHits();
+                    CheckForEnemyHits();
+                    UpdateGameStatus();
+                    UpdateSaucers();
+                }
+                else
+                    HandleSpecialStates();
 
+                UpdateExplosions();
+                UpdateThanosSnap();
+                
                 if (AfterGameUpdated is object) //Check the event is not NULL.
                 {
                     AfterGameUpdated();
@@ -238,8 +248,152 @@ namespace BlazeInvaders.Client.Shared
             {
                 Console.WriteLine(e.Message);
             }
-            EngineTimer.Start();
+
+            bool restartTimer = (GameState != GameState.Paused && GameState != GameState.NotStarted && GameState != GameState.GameOver);
+            if (restartTimer)
+                EngineTimer.Start();
             
+        }
+
+        private void UpdateGameStatus()
+        {
+            if (!GameModels.Any(x => x.ModelType == GameModelType.Enemy || x.ModelType == GameModelType.Saucer))
+            {
+                GameState = GameState.RoundCompleted;
+                GameInfo.Round++;
+                RoundCompletedModel roundCompletedModel = new RoundCompletedModel();
+                roundCompletedModel.RoundCompletedTime = DateTime.Now;
+                roundCompletedModel.Height = 200;
+                roundCompletedModel.Width = 200;
+                roundCompletedModel.X = WindowWidth / 2 - roundCompletedModel.Width / 2;
+                roundCompletedModel.Y = WindowHeight / 2 - roundCompletedModel.Height / 2;
+                GameModels.Add(roundCompletedModel);
+            }
+        }
+
+        void HandleSpecialStates()
+        {
+            if (GameState == GameState.LifeLost)
+            {
+                var lifeLostModel = (LifeLostModel)GameModels.First(x => x.ModelType == GameModelType.LifeLost);
+
+                if ((DateTime.Now - lifeLostModel.LifeLostTime).TotalMilliseconds > 5000)
+                {
+                    SetupRound();
+                    GameState = GameState.InProgress;
+                }
+            }
+            else if (GameState == GameState.GameOverInProgress)
+            {
+                var gameOverModel = (GameOverModel)GameModels.First(x => x.ModelType == GameModelType.GameOver);
+
+                if ((DateTime.Now - gameOverModel.GameOverTime).TotalMilliseconds > 2000)
+                    GameState = GameState.GameOver;
+            }
+            else if (GameState == GameState.RoundCompleted)
+            {
+                var roundCompletedModel = (RoundCompletedModel)GameModels.First(x => x.ModelType == GameModelType.RoundCompleted);
+
+                if ((DateTime.Now - roundCompletedModel.RoundCompletedTime).TotalMilliseconds > 5000)
+                {
+                    SetupRound();
+                    GameState = GameState.InProgress;
+                }
+            }
+        
+        }
+
+        void SetupRound()
+        {
+            GameModels.Clear();
+            CreateEnemies();
+            CreatePlayer();
+        }
+
+        public void ThanosSnap()
+        {
+            //if (GameInfo.ThanosSnaps == 0)
+            //    return;
+
+            if (GameModels.Any(x => x.ModelType == GameModelType.ThanosSnap))
+                return;
+
+            GameInfo.ThanosSnaps--;
+
+            ThanosSnapModel thanosSnapModel = new ThanosSnapModel();
+            thanosSnapModel.Height = 150;
+            thanosSnapModel.Width = 150;
+            thanosSnapModel.ThanosSnapTime = DateTime.Now;
+            thanosSnapModel.X = WindowWidth / 2 - thanosSnapModel.Width / 2;
+            thanosSnapModel.Y = WindowHeight - 10;
+            thanosSnapModel.SnapState = ThanosSnapState.Rising;
+            GameModels.Add(thanosSnapModel);
+            GameState = GameState.ThanosSnapping;
+        }
+
+        void UpdateThanosSnap()
+        {
+            int stepSize = 3;
+            var thanosSnapModel = GetThanosSnapModels().FirstOrDefault();
+            if (thanosSnapModel == null)
+                return;
+
+            var ellapsedSinceSnap = (DateTime.Now - thanosSnapModel.ThanosSnapTime).TotalMilliseconds;
+
+            if (thanosSnapModel.SnapState == ThanosSnapState.Rising)
+            {
+                if (thanosSnapModel.Y > WindowHeight / 2)
+                    thanosSnapModel.Y -= stepSize;
+                else
+                    thanosSnapModel.SnapState = ThanosSnapState.ReadyToKill;
+            }
+            else if (thanosSnapModel.SnapState == ThanosSnapState.ReadyToKill)
+            {
+                if (ellapsedSinceSnap > 4000)
+                {
+                    //Wipe out all bombs
+                    var enemyBombs = GetEnemyBombModels();
+                    foreach (var enemyBomb in enemyBombs)
+                    {
+                        CreateExplosion(enemyBomb);
+                        GameModels.Remove(enemyBomb);
+                    }
+
+                    //Kill Half Enemies
+                    var enemyModels = GetEnemyModels();
+                    int numEnemiesToKill = enemyModels.Count / 2;
+                    int enemiesKilled = 0;
+                    while (enemiesKilled < numEnemiesToKill)
+                    {
+                        var enemyToKill = enemyModels[random.Next(enemyModels.Count)];
+                        GameInfo.Score += enemyToKill.PointValue;
+                        CreateExplosion(enemyToKill);
+                        GameModels.Remove(enemyToKill);
+                        enemyModels.Remove(enemyToKill);
+                        enemiesKilled++;
+                    }
+
+                    thanosSnapModel.SnapState = ThanosSnapState.Killing;
+
+                }
+            }
+            else if (thanosSnapModel.SnapState == ThanosSnapState.Killing)
+            {
+                if (ellapsedSinceSnap >= 7000)
+                {
+                    thanosSnapModel.SnapState = ThanosSnapState.Retracting;
+                }
+            }
+            else if (thanosSnapModel.SnapState == ThanosSnapState.Retracting)
+            {
+                thanosSnapModel.Y += stepSize;
+
+                if (thanosSnapModel.Y >= WindowHeight + 150)
+                {
+                    GameModels.Remove(thanosSnapModel);
+                    GameState = GameState.InProgress;
+                }
+            }
         }
 
         void CreateExplosion(GameModelBase gameModelHit) //The game piece that has been hit is passed in.
@@ -317,7 +471,7 @@ namespace BlazeInvaders.Client.Shared
                         GameInfo.SaucersSinceLastDanosSnap++;
                         if (GameInfo.SaucersSinceLastDanosSnap == 8) //After 8 saucers the player gets a new Danos Snap. 
                         {
-                            GameInfo.DanosSnaps++;
+                            GameInfo.ThanosSnaps++;
                             GameInfo.SaucersSinceLastDanosSnap = 0; //Count is reset. 
                         }
                         gameModelHit = saucerHit;
@@ -343,9 +497,33 @@ namespace BlazeInvaders.Client.Shared
                 CreateExplosion(player);
 
                 GameModels.Remove(killer);
-                //GameModels.Remove(player);
+                GameModels.Remove(player);
 
                 GameInfo.Lives--;
+
+                if (GameInfo.Lives == 0)
+                {
+                    GameState = GameState.GameOverInProgress;
+                    GameOverModel gameOverModel = new GameOverModel();
+                    gameOverModel.GameOverTime = DateTime.Now;
+                    GameInfo.EndTime = gameOverModel.GameOverTime;
+                    gameOverModel.Height = 200;
+                    gameOverModel.Width = 200;
+                    gameOverModel.X = WindowWidth / 2 - gameOverModel.Width / 2;
+                    gameOverModel.Y = WindowHeight / 2 - gameOverModel.Height / 2;
+                    GameModels.Add(gameOverModel);
+                }
+                else 
+                {
+                    GameState = GameState.LifeLost;
+                    LifeLostModel lifeLostModel = new LifeLostModel();
+                    lifeLostModel.LifeLostTime = DateTime.Now;
+                    lifeLostModel.Height = 200;
+                    lifeLostModel.Width = 200;
+                    lifeLostModel.X = WindowWidth / 2 - lifeLostModel.Width / 2;
+                    lifeLostModel.Y = WindowHeight / 2 - lifeLostModel.Height / 2;
+                    GameModels.Add(lifeLostModel);
+                }
             }
         }
 

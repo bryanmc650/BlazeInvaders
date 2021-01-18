@@ -1,0 +1,38 @@
+﻿<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 438.11 437.13" height="50px" width="50px">
+    <defs>
+        <style>
+            .cls-1 {
+                fill: #ff0;
+            }
+
+            .cls-1, .cls-2 {
+                stroke: #000;
+                stroke-miterlimit: 10;
+                stroke-width: 0.5px;
+            }
+        </style>
+    </defs>
+    <title>DanosSnapProgress</title>
+    <path style="fill:#ff0;opacity:@getOpacity(1)" d="M579.05,894.56,450.73,717.94c39-28.35,80.09-41.69,128.32-41.69Z" transform="translate(-359.99 -676)" />
+    <path style="fill:#ff0;opacity:@getOpacity(2)" d="M579.05,894.56,371.42,827.1c14.9-45.87,40.29-80.81,79.31-109.16Z" transform="translate(-359.99 -676)" />
+    <path style="fill:#ff0;opacity:@getOpacity(3)" d="M579.05,894.56,371.42,962c-14.9-45.87-14.9-89.06,0-134.92Z" transform="translate(-359.99 -676)" />
+    <path style="fill:#ff0;opacity:@getOpacity(4)" d="M579.05,894.56,450.73,1071.18c-39-28.35-64.41-63.29-79.31-109.16Z" transform="translate(-359.99 -676)" />
+    <path style="fill:#ff0;opacity:@getOpacity(5)" d="M579.05,894.56v218.31c-48.23,0-89.31-13.35-128.32-41.69Z" transform="translate(-359.99 -676)" />
+    <path style="fill:#ff0;opacity:@getOpacity(6)" d="M579.05,894.56l128.32,176.62c-39,28.34-80.1,41.69-128.32,41.69Z" transform="translate(-359.99 -676)" />
+    <path style="fill:#ff0;opacity:@getOpacity(7)" d="M579.05,894.56,786.67,962c-14.9,45.87-40.29,80.81-79.3,109.16Z" transform="translate(-359.99 -676)" />
+    <path style="fill:#ff0;opacity:@getOpacity(8)" d="M579.05,894.56,786.67,827.1c14.91,45.86,14.91,89,0,134.92Z" transform="translate(-359.99 -676)" />
+    <path style="fill:#ff0;opacity:@getOpacity(9)" d="M579.05,894.56,707.37,717.94c39,28.35,64.4,63.29,79.3,109.16Z" transform="translate(-359.99 -676)" />
+    <path style="fill:#ff0;opacity:@getOpacity(10)" d="M579.05,894.56V676.25c48.22,0,89.3,13.34,128.32,41.69Z" transform="translate(-359.99 -676)" />
+    <circle class="cls-2" cx="219.01" cy="219" r="138.5" />
+</svg>
+
+@code {
+    [Parameter]
+    public int SaucersHit { get; set; }
+    private int getOpacity(int saucerBeforeShow)
+    {
+        if (saucerBeforeShow <= SaucersHit)
+            return 1;
+        return 0;
+    }
+}

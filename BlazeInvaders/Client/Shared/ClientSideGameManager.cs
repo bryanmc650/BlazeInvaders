@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 namespace BlazeInvaders.Client.Shared
 {
     enum EnemyDirection { Right, Left }
-    enum GameState {NotStarted, InProgress, Paused, LifeLost, GameOverInProgress, GameOver, RoundCompleted, ThanosSnapping } 
+    public enum GameState {NotStarted, InProgress, Paused, LifeLost, GameOverInProgress, GameOver, RoundCompleted, ThanosSnapping } 
     public class ClientSideGameManager
     {
-        GameState GameState { get; set; }
+        public GameState GameState { get; set; }
         public GameInfo GameInfo { get; set; } = new GameInfo(); 
         Random random = new Random();
         EnemyDirection enemyDirection;

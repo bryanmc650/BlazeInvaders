@@ -1,0 +1,24 @@
+﻿<div class="card">
+    <div class="card-body bg-dark text-white">
+        @if (GameManager.GameState == GameState.GameOver)
+        { 
+            <h4>GAME OVER!</h4>
+        }
+        <h5>Round @GameManager.GameInfo.Round</h5>
+        <h5>Player</h5>
+        <div>Score: @GameManager.GameInfo.Score</div>
+        <div>Lives: @GameManager.GameInfo.Lives
+            @for (int life = 0; life < GameManager.GameInfo.Lives; life++)
+            { 
+                <img style="width:30px;height:30px" src="GameAssets/Images/Players/PlayerIdle.svg" />    
+            }
+        </div>
+        <div>Thanos Snaps: @GameManager.GameInfo.ThanosSnaps</div>
+        <div>Thanos Snap Power Progress: <ThanosSnapProgress SaucersHit="@GameManager.GameInfo.SaucersSinceLastDanosSnap"></ThanosSnapProgress></div>
+    </div>    
+</div>
+
+@code {
+    [Parameter]
+    public ClientSideGameManager GameManager { get; set; }
+}

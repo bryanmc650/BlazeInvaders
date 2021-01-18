@@ -13,6 +13,7 @@
         <button class="btn btn-primary" @onmousedown="PlayerRight" @onmouseup="CancelPlayerRight" @onmouseout="CancelPlayerRight">Right</button>
         <button class="btn btn-primary" @onclick="ThanosSnap">THANOS SNAP!</button>
     </div>
+<GameHUD GameManager="@gameManager"></GameHUD>
 
 @code {
     ClientSideGameManager gameManager = new ClientSideGameManager();

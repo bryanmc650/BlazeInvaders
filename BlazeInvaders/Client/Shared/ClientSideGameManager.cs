@@ -1,4 +1,5 @@
 ﻿using BlazeInvaders.Shared.GameModels;
+using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -21,9 +22,13 @@ namespace BlazeInvaders.Client.Shared
         private DateTime lastEnemyUpdateTime;
 
         public Action AfterGameUpdated { get; set; }
+        public IJSRuntime JsRuntime { get; set; }
+        AudioController audioController;
 
-        public ClientSideGameManager()
+        public ClientSideGameManager(IJSRuntime jsRuntime)
         {
+            JsRuntime = jsRuntime;
+            audioController = new AudioController(this);
             EngineTimer.Interval = 10;
             EngineTimer.Elapsed += engineTimerElapsed;
         }
@@ -94,7 +99,7 @@ namespace BlazeInvaders.Client.Shared
         {
             if (GetPlayerMissileModels().Count > 0) //1 missile at a time.
                 return;
-
+            audioController.PlayBulletFired();
             PlayerMissileModel playerMissileModel = new PlayerMissileModel();
             playerMissileModel.X = player.X + player.Width / 2;
             playerMissileModel.Y = WindowHeight - player.Height;
@@ -105,7 +110,7 @@ namespace BlazeInvaders.Client.Shared
         }
 
         //Set up a new game.
-        public void StartNewGame()
+        public async Task StartNewGame()
         {
             EngineTimer.Stop();
             GameModels.Clear();
@@ -115,6 +120,7 @@ namespace BlazeInvaders.Client.Shared
             GameInfo.Lives = 3;
             GameInfo.Round = 1;
 
+            await audioController.Initialize();
             CreateEnemies();
             CreatePlayer();
             GameState = GameState.InProgress;
@@ -209,7 +215,7 @@ namespace BlazeInvaders.Client.Shared
                 }
             
             }
-
+            audioController.PlayEnemyMove();
         }
 
         
@@ -329,6 +335,7 @@ namespace BlazeInvaders.Client.Shared
             thanosSnapModel.SnapState = ThanosSnapState.Rising;
             GameModels.Add(thanosSnapModel);
             GameState = GameState.ThanosSnapping;
+            audioController.PlayDanosSnap();
         }
 
         void UpdateThanosSnap()
@@ -374,6 +381,7 @@ namespace BlazeInvaders.Client.Shared
                     }
 
                     thanosSnapModel.SnapState = ThanosSnapState.Killing;
+                    audioController.PlayDanosSnap();
 
                 }
             }
@@ -382,6 +390,7 @@ namespace BlazeInvaders.Client.Shared
                 if (ellapsedSinceSnap >= 7000)
                 {
                     thanosSnapModel.SnapState = ThanosSnapState.Retracting;
+                    audioController.PlayDanosSnap();
                 }
             }
             else if (thanosSnapModel.SnapState == ThanosSnapState.Retracting)
@@ -410,6 +419,10 @@ namespace BlazeInvaders.Client.Shared
                 explosionModel.PointValue = ((SaucerModel)gameModelHit).PointValue;
             if (gameModelHit.ModelType == GameModelType.Enemy)
                 explosionModel.PointValue = ((EnemyModel)gameModelHit).PointValue;
+            if (gameModelHit.ModelType == GameModelType.Player)
+                audioController.PlayPlayerExplosion();
+            else
+                audioController.PlayEnemyExplode();
         }
 
         private void UpdateExplosions()
@@ -482,6 +495,7 @@ namespace BlazeInvaders.Client.Shared
                 {
                     GameModels.Remove(gameModelHit); //Remove pieces that were hit from the board.
                     GameModels.Remove(playerMissile);
+                    audioController.StopBulletFired();
                     CreateExplosion(gameModelHit); //Create the explosion for the piece that was hit.
                 }
             }
@@ -511,6 +525,7 @@ namespace BlazeInvaders.Client.Shared
                     gameOverModel.Width = 200;
                     gameOverModel.X = WindowWidth / 2 - gameOverModel.Width / 2;
                     gameOverModel.Y = WindowHeight / 2 - gameOverModel.Height / 2;
+                    audioController.PlayGameOver();
                     GameModels.Add(gameOverModel);
                 }
                 else 
@@ -566,6 +581,7 @@ namespace BlazeInvaders.Client.Shared
                 if (model.Y < -model.Height)
                 {
                     GameModels.Remove(model);
+                    audioController.StopBulletFired();
                 }
             }
         

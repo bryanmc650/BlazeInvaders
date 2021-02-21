@@ -1,5 +1,7 @@
 ﻿@page "/gamewindow"
-    <svg style="background-color:black; width:@($"{gameManager.WindowWidth}px"); height:@($"{gameManager.WindowHeight}px");">
+@inject IJSRuntime jsRuntime
+
+    <svg style="background-color:black; width:@($"{gameManager.WindowWidth}px"); height:@($"{gameManager.WindowHeight}px");" id="@gameWindowId.ToString()">
         @foreach (var gameModel in gameManager.GameModels)
         { 
             <GameComponent Model="gameModel"></GameComponent>
@@ -16,7 +18,8 @@
 <GameHUD GameManager="@gameManager"></GameHUD>
 
 @code {
-    ClientSideGameManager gameManager = new ClientSideGameManager();
+    ClientSideGameManager gameManager;
+    Guid gameWindowId = Guid.NewGuid();
 
     void PlayerLeft() => gameManager.PlayerLeft();
     void CancelPlayerLeft() => gameManager.CancelPlayerLeft();
@@ -25,9 +28,61 @@
     void PlayerFire() => gameManager.PlayerFire();
     void ThanosSnap() => gameManager.ThanosSnap();
 
-    void StartGame()
+    protected override void OnInitialized()
     {
-        gameManager.StartNewGame();
+        gameManager = new ClientSideGameManager(jsRuntime);
+        JSKeyHandler.KeyDown += OnKeyDown;
+        JSKeyHandler.KeyUp += OnKeyUp;
+        base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await jsRuntime.InvokeVoidAsync("addResizeGameWindowEvent", gameWindowId.ToString(), DotNetObjectReference.Create<GameWindow>(this));        
+    }
+
+    async void StartGame()
+    {
+        await gameManager.StartNewGame();
         gameManager.AfterGameUpdated = () => { StateHasChanged(); };
+    }
+
+    public void OnKeyDown(object sender, ConsoleKey key)
+    {
+        switch (key)
+        {
+            case ConsoleKey.LeftArrow:
+                PlayerLeft();
+                break;
+            case ConsoleKey.RightArrow:
+                PlayerRight();
+                break;
+            case ConsoleKey.Spacebar:
+                PlayerFire();
+                break;
+            case ConsoleKey.S:
+                ThanosSnap();
+                break;
+        }
+    }
+
+    public void OnKeyUp(object sender, ConsoleKey key)
+    {
+        switch (key)
+        {
+            case ConsoleKey.LeftArrow:
+                CancelPlayerLeft();
+                break;
+            case ConsoleKey.RightArrow:
+                CancelPlayerRight();
+                break;
+        }
+    }
+
+    [JSInvokable]
+    public void OnGameWindowResize(int newHeight, int newWidth)
+    {
+        Console.WriteLine($"New Height:{newHeight} New Width{newWidth}");
     }
 }
